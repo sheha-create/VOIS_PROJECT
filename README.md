@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Network Port Scanner GUI
 
 A lightweight TCP port scanner with a graphical user interface built with Python and Tkinter.
@@ -75,3 +76,6 @@ Use this tool only on hosts and networks you own or have explicit permission to 
 ## License
 
 This project is released under the [MIT License](https://opensource.org/licenses/MIT).
+=======
+# VOIS_PROJECT
+>>>>>>> origin/main
