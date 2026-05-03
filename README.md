@@ -1,72 +1,57 @@
-<<<<<<< HEAD
-# Network Port Scanner GUI
+# NetScan Pro - Advanced Network Port Scanner
 
-A lightweight TCP port scanner with a graphical user interface built with Python and Tkinter.
+NetScan Pro is a premium, multi-threaded TCP port scanner built with Python and CustomTkinter. It features a modern dark cybersecurity theme, real-time analytics, and advanced scanning controls.
 
 ## Features
 
-- **Simple 3-field interface** – enter a target host, start port, and end port
-- **Multi-threaded scanning** – up to 500 concurrent threads for fast results
-- **Service identification** – automatically labels well-known ports (FTP, SSH, HTTP, HTTPS, MySQL, RDP, etc.)
-- **Real-time progress** – progress bar and elapsed-time counter update live during a scan
-- **Stop at any time** – cancel a running scan gracefully
-- **Save results** – export discovered open ports to a `.txt` file
-- **Cross-platform** – runs on Windows, macOS, and Linux
+- **Modern Dark UI** – Sleek interface with electric blue accents and animated background.
+- **Multi-threaded Scanning** – Support for up to 500 concurrent threads for rapid results.
+- **Risk Assessment** – Automatic risk-level categorization (Critical, High, Medium, Low) for open ports.
+- **Service Identification** – Labels common services (SSH, HTTP, MySQL, etc.) automatically.
+- **Live Analytics** – Real-time Ports-Per-Second (PPS) counter and progress tracking.
+- **Stop & Resume** – Full control over active scans with pause and resume functionality.
+- **Latency Tracking** – Measure the response time (ping) for each discovered port.
+- **Scan History** – Sidebar tracking your last 5 targets for quick access.
+- **Flexible Export** – Export your findings as professional CSV or JSON reports.
 
 ## Requirements
 
 - Python 3.7 or newer
-- Tkinter (included in the standard Python distribution; on Debian/Ubuntu install `python3-tk`)
-
-No third-party packages are required.
+- `customtkinter`
+- `Pillow`
 
 ## Installation
 
-```bash
-git clone https://github.com/techtrainer20/nmap_portscan_gui.git
-cd nmap_portscan_gui
-```
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/sheha-create/VOIS_PROJECT.git
+   cd VOIS_PROJECT
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install customtkinter Pillow
+   ```
 
 ## Usage
 
+Run the application:
 ```bash
-python portscanergui.py
+python networkportscanner.py
 ```
 
-1. Enter the **Target** – an IP address (e.g. `192.168.1.1`) or hostname (e.g. `scanme.nmap.org`).
-2. Set the **Start Port** and **End Port** (defaults: `1` – `1024`).
-3. Click **Start Scan**. Open ports appear in real time in the results pane.
-4. Click **Stop** to cancel a scan early.
-5. After a scan completes, click **Save Results** to write the open-port list to a text file.
-
-## Detected Services
-
-The following ports are automatically labelled:
-
-| Port | Service   |
-|------|-----------|
-| 21   | FTP       |
-| 22   | SSH       |
-| 23   | Telnet    |
-| 25   | SMTP      |
-| 53   | DNS       |
-| 80   | HTTP      |
-| 110  | POP3      |
-| 143  | IMAP      |
-| 443  | HTTPS     |
-| 3306 | MySQL     |
-| 3389 | RDP       |
-| 5900 | VNC       |
-| 8080 | HTTP-Alt  |
-
-Ports not in the list are reported as `Unknown`.
+1. Enter the **Target IP or Hostname**.
+2. Set the **Port Range** and adjust the **Thread Slider** for speed.
+3. Click **Radar Scan** to begin.
+4. Use **Pause/Resume** or **Stop** as needed.
+5. Filter results using the search bar or **Export** them once complete.
 
 ## Project Structure
 
 ```
-nmap_portscan_gui/
-├── portscanergui.py   # Main application (scanner + GUI)
-└── README.md
+VOIS_PROJECT/
+├── networkportscanner.py   # Main application
+└── README.md               # Documentation
 ```
 
 ## Disclaimer
@@ -76,6 +61,3 @@ Use this tool only on hosts and networks you own or have explicit permission to 
 ## License
 
 This project is released under the [MIT License](https://opensource.org/licenses/MIT).
-=======
-# VOIS_PROJECT
->>>>>>> origin/main
