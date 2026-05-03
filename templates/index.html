@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetScan Pro | Advanced Web Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0D1B2A;
+            --bg-card: #1B263B;
+            --accent: #00B4D8;
+            --accent-hover: #0096C7;
+            --text-main: #CAF0F8;
+            --text-dim: #90E0EF;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+        .glass-card {
+            background: rgba(27, 38, 59, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 180, 216, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+        .neon-border:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+        .progress-bar {
+            height: 8px;
+            background: #333;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent);
+        }
+        .badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #000;
+        }
+        .critical { background-color: #FF4D4D; }
+        .high { background-color: #FFA500; }
+        .medium { background-color: #FFFF00; }
+        .low { background-color: #00FF00; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container mx-auto px-4 py-8 relative">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-10 h-10 flex items-center justify-center bg-accent rounded-lg shadow-[0_0_15px_rgba(0,180,216,0.5)]">
+                    <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tighter text-accent">NETSCAN PRO</h1>
+                    <p class="text-xs text-text-dim">v2.0 Enterprise Web Portal</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <span class="text-xs text-text-dim">SYSTEM STATUS: <span class="text-green-400">OPERATIONAL</span></span>
+            </div>
+        </header>
+
+        <!-- Main Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column: Settings & Status -->
+            <div class="lg:col-span-1 space-y-8">
+                <!-- Settings Card -->
+                <div class="glass-card p-6">
+                    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Scan Settings
+                    </h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs text-text-dim block mb-1">Target Host/IP</label>
+                            <input type="text" id="target" placeholder="e.g. 192.168.1.1" class="w-full bg-bg-dark border border-gray-700 rounded p-2 text-sm neon-border">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs text-text-dim block mb-1">Start Port</label>
+                                <input type="number" id="start-port" value="1" class="w-full bg-bg-dark border border-gray-700 rounded p-2 text-sm neon-border">
+                            </div>
+                            <div>
+                                <label class="text-xs text-text-dim block mb-1">End Port</label>
+                                <input type="number" id="end-port" value="1024" class="w-full bg-bg-dark border border-gray-700 rounded p-2 text-sm neon-border">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs text-text-dim block mb-1">Threads: <span id="thread-val">100</span></label>
+                            <input type="range" id="threads" min="1" max="500" value="100" class="w-full h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-accent">
+                        </div>
+                        <div class="pt-2">
+                            <button id="btn-start" class="w-full bg-accent hover:bg-accent-hover text-black font-bold py-3 rounded transition-all shadow-[0_0_15px_rgba(0,180,216,0.3)]">
+                                RADAR SCAN
+                            </button>
+                            <button id="btn-stop" class="w-full bg-red-900/50 hover:bg-red-800 text-white font-bold py-2 rounded mt-2 hidden">
+                                STOP
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Card -->
+                <div class="glass-card p-6">
+                    <h2 class="text-lg font-bold mb-4">Live Status</h2>
+                    <div class="progress-bar mb-2">
+                        <div id="progress-fill" class="progress-fill"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-text-dim mb-4">
+                        <span id="status-text">Idle</span>
+                        <span id="percent-text">0%</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-black/30 p-2 rounded">
+                            <div class="text-[10px] text-text-dim">ELAPSED</div>
+                            <div id="timer" class="text-sm font-bold">0.0s</div>
+                        </div>
+                        <div class="bg-black/30 p-2 rounded">
+                            <div class="text-[10px] text-text-dim">CURRENT PORT</div>
+                            <div id="curr-port" class="text-sm font-bold">-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Results Panel -->
+            <div class="lg:col-span-2 space-y-8">
+                <div class="glass-card flex flex-col h-[600px]">
+                    <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                        <h2 class="text-lg font-bold">Open Ports Discovery</h2>
+                        <div class="flex gap-4">
+                            <input type="text" id="search" placeholder="Filter..." class="bg-black/30 border border-gray-700 rounded px-3 py-1 text-xs neon-border">
+                            <button id="btn-export" class="text-xs bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded disabled:opacity-50" disabled>EXPORT</button>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4">
+                        <table class="w-full text-left text-sm">
+                            <thead class="text-text-dim sticky top-0 bg-bg-card">
+                                <tr>
+                                    <th class="pb-4 font-normal">PORT</th>
+                                    <th class="pb-4 font-normal">SERVICE</th>
+                                    <th class="pb-4 font-normal">RISK LEVEL</th>
+                                    <th class="pb-4 font-normal">LATENCY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-body" class="divide-y divide-gray-800">
+                                <!-- Results will appear here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-4 border-t border-gray-700 text-xs text-text-dim flex justify-between">
+                        <span id="summary-text">Ready to scan.</span>
+                        <span id="pps-text">0 ports/sec</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed top-8 left-1/2 -translate-x-1/2 bg-accent text-black px-6 py-2 rounded-full font-bold text-sm shadow-lg opacity-0 transition-opacity pointer-events-none z-50">
+        Scan complete!
+    </div>
+
+    <script>
+        const socket = io();
+        let startTime = null;
+        let scanActive = false;
+        let resultsData = [];
+        let timerInterval = null;
+
+        const elements = {
+            target: document.getElementById('target'),
+            startPort: document.getElementById('start-port'),
+            endPort: document.getElementById('end-port'),
+            threads: document.getElementById('threads'),
+            threadVal: document.getElementById('thread-val'),
+            btnStart: document.getElementById('btn-start'),
+            btnStop: document.getElementById('btn-stop'),
+            progressFill: document.getElementById('progress-fill'),
+            percentText: document.getElementById('percent-text'),
+            statusText: document.getElementById('status-text'),
+            timer: document.getElementById('timer'),
+            currPort: document.getElementById('curr-port'),
+            resultsBody: document.getElementById('results-body'),
+            search: document.getElementById('search'),
+            btnExport: document.getElementById('btn-export'),
+            summary: document.getElementById('summary-text'),
+            pps: document.getElementById('pps-text'),
+            toast: document.getElementById('toast')
+        };
+
+        // Thread Slider
+        elements.threads.oninput = () => elements.threadVal.innerText = elements.threads.value;
+
+        // Start Scan
+        elements.btnStart.onclick = () => {
+            const target = elements.target.value.trim();
+            if(!target) return alert('Enter target!');
+
+            scanActive = true;
+            resultsData = [];
+            elements.resultsBody.innerHTML = '';
+            elements.btnStart.classList.add('hidden');
+            elements.btnStop.classList.remove('hidden');
+            elements.btnExport.disabled = true;
+            elements.statusText.innerText = 'Scanning...';
+            
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 100);
+
+            socket.emit('start_scan', {
+                target,
+                start_port: elements.startPort.value,
+                end_port: elements.endPort.value,
+                threads: elements.threads.value
+            });
+        };
+
+        // Stop Scan
+        elements.btnStop.onclick = () => {
+            socket.emit('stop_scan');
+            finalizeScan();
+        };
+
+        function updateTimer() {
+            if(!startTime) return;
+            const elapsed = (Date.now() - startTime) / 1000;
+            elements.timer.innerText = elapsed.toFixed(1) + 's';
+        }
+
+        function finalizeScan(msg = 'Scan Complete') {
+            scanActive = false;
+            clearInterval(timerInterval);
+            elements.btnStart.classList.remove('hidden');
+            elements.btnStop.classList.add('hidden');
+            elements.btnExport.disabled = resultsData.length === 0;
+            elements.statusText.innerText = 'Completed';
+            showToast(msg);
+        }
+
+        function showToast(msg) {
+            elements.toast.innerText = msg;
+            elements.toast.style.opacity = '1';
+            setTimeout(() => elements.toast.style.opacity = '0', 3000);
+        }
+
+        // Socket Events
+        socket.on('port_found', (data) => {
+            resultsData.push(data);
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-white/5 transition-colors';
+            row.innerHTML = `
+                <td class="py-3 font-bold">${data.port}</td>
+                <td class="py-3 text-text-dim">${data.service}</td>
+                <td class="py-3"><span class="badge ${data.risk.toLowerCase()}">${data.risk}</span></td>
+                <td class="py-3 text-text-dim">${data.latency}</td>
+            `;
+            elements.resultsBody.prepend(row);
+            elements.summary.innerText = `Discovered ${resultsData.length} open ports.`;
+        });
+
+        socket.on('progress', (data) => {
+            elements.progressFill.style.width = data.percent + '%';
+            elements.percentText.innerText = data.percent + '%';
+            elements.currPort.innerText = data.current_port;
+            
+            const elapsed = (Date.now() - startTime) / 1000;
+            if(elapsed > 0) {
+                const pps = data.scanned / elapsed;
+                elements.pps.innerText = Math.round(pps) + ' ports/sec';
+            }
+        });
+
+        socket.on('scan_complete', (data) => {
+            finalizeScan(`Scan Complete - ${data.total_open} open ports`);
+        });
+
+        // Search Filter
+        elements.search.onkeyup = () => {
+            const query = elements.search.value.toLowerCase();
+            const rows = elements.resultsBody.getElementsByTagName('tr');
+            for(let row of rows) {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(query) ? '' : 'none';
+            }
+        };
+
+        // Export
+        elements.btnExport.onclick = () => {
+            const blob = new Blob([JSON.stringify(resultsData, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `netscan_results_${Date.now()}.json`;
+            a.click();
+        };
+
+        // Animated Background
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initBackground() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            particles = [];
+            for(let i=0; i<50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    r: Math.random() * 2 + 1
+                });
+            }
+        }
+
+        function drawBackground() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0D1B2A';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                ctx.fillStyle = '#00B4D833';
+                ctx.fill();
+
+                particles.forEach(p2 => {
+                    const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                    if(dist < 100) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(0, 180, 216, ${0.1 * (1 - dist/100)})`;
+                        ctx.stroke();
+                    }
+                });
+            });
+            requestAnimationFrame(drawBackground);
+        }
+
+        window.onresize = initBackground;
+        initBackground();
+        drawBackground();
+    </script>
+</body>
+</html>
